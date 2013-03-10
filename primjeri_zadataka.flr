@@ -1,0 +1,372 @@
+/*
+Neka je zadana baza znanja:
+
+zaposlenik::osoba.
+kupac::osoba.
+menadzer::zaposlenik.
+direktor::menadzer.
+
+stefica:kupac.
+ivek:zaposlenik.
+joza:menadzer.
+bara:direktor.
+
+ivek[ placa->100 ].
+joza[ placa->200 ].
+bara[ placa->300 ].
+
+Implementirajte metodu ukupne_place koja će za zadanu klasu vratiti zbroj svih plaća objekata u toj klasi.
+
+Primjeri korištenja:
+
+
+flora2 ?- osoba[ ukupne_place->?p ].
+
+?p = 600
+
+1 solution(s) in 0.0100 seconds
+
+Yes
+
+flora2 ?- zaposlenik[ ukupne_place->?p ].
+
+?p = 600
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- menadzer[ ukupne_place->?p ].
+
+?p = 500
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- direktor[ ukupne_place->?p ].
+
+?p = 300
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+*/
+
+
+zaposlenik::osoba.
+kupac::osoba.
+menadzer::zaposlenik.
+direktor::menadzer.
+
+
+osoba[
+  ukupne_place => integer
+].
+
+zaposlenik::osoba[
+  placa => integer
+].
+
+stefica:kupac.
+ivek:zaposlenik.
+joza:menadzer.
+bara:direktor.
+
+ivek[ placa->100 ].
+joza[ placa->200 ].
+bara[ placa->300 ].
+
+
+?osoba[ukupne_place -> ?ukupna_placa] :-
+  ?ukupna_placa = sum{?_g | ?_:?osoba[placa->?_g]}.
+
+
+/*
+
+Neka je zadana sljedeća baza znanja:
+
+zaposlenik::osoba.
+kupac::osoba.
+menadzer::zaposlenik.
+direktor::menadzer.
+
+stefica:kupac.
+ivek:zaposlenik.
+joza:menadzer.
+bara:direktor.
+
+Implementirajte meta-predikat (naziv/funktor predikata je varijabilan) koji će omogućiti vraćanje liste objekata koji su u 
+klasi zadanom nazivom predikata.
+
+Primjeri korištenja:
+
+
+flora2 ?- osoba( ?x ).
+
+?x = [bara, ivek, joza, stefica]
+
+1 solution(s) in 0.0100 seconds
+
+Yes
+
+flora2 ?- kupac( ?x ).
+
+?x = [stefica]
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- zaposlenik( ?x ).
+
+?x = [bara, ivek, joza]
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- menadzer( ?x ).
+
+?x = [bara, joza]
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- direktor( ?x ).
+
+?x = [bara]
+
+1 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- 
+ 
+*/
+
+?predikat(?x) :- ?x = collectset{?_g| ?_g:?predikat}.
+
+/*
+Neka je zadana sljedeća baza znanja u F-logici:
+
+Joza:osoba[ roditelj->{ Stef, Bara }, spol->musko ].
+Stef:osoba[ roditelj->{ Stefica, Ivek }, spol->musko ].
+Bara:osoba[ roditelj->{ Slavek, Marica }, spol->zensko ].
+Ivek:osoba[ spol->musko ].
+Stefica:osoba[ spol->zensko ].
+Slavek:osoba[ spol->musko ].
+Marica:osoba[ spol->zensko ].
+
+Implementirajte metode baka i predak za klasu osoba. Primjeri korištenja:
+
+flora2 ?- ?x[ baka->?y ].
+
+?x = Joza
+?y = Marica
+
+?x = Joza
+?y = Stefica
+
+2 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- Joza[ predak->?y ].
+
+?y = Bara
+
+?y = Ivek
+
+?y = Marica
+
+?y = Slavek
+
+?y = Stef
+
+?y = Stefica
+
+6 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- 
+*/
+
+
+osoba[
+  roditelj => osoba,
+  spol => string,
+  baka => osoba,
+  predak => osoba
+].
+
+?osoba[baka -> ?baka] :- ?osoba[roditelj->?roditelj], ?roditelj[roditelj->?baka], ?baka[spol->zensko].
+
+?osoba[predak -> ?predak] :- ?osoba[roditelj->?predak].
+?osoba[predak -> ?predak] :- ?osoba[predak -> ?x], ?x[roditelj->?predak].
+
+Joza:osoba[ roditelj->{ Stef, Bara }, spol->musko ].
+Stef:osoba[ roditelj->{ Stefica, Ivek }, spol->musko ].
+Bara:osoba[ roditelj->{ Slavek, Marica }, spol->zensko ].
+Ivek:osoba[ spol->musko ].
+Stefica:osoba[ spol->zensko ].
+Slavek:osoba[ spol->musko ].
+Marica:osoba[ spol->zensko ].
+
+/*
+
+Implementirajte sljedeći UML dijagram u F-logici:
+
+http://arka.foi.hr/~mschatten/lp/uml_manageri.png
+
+Metoda podređeni prima naziv odjela i vraća listu podređenih datog menadžera.
+
+Primjerice neka je zadana sljedeća baza znanja:
+
+
+ivek:zaposlenik[ ime->Ivan, prezime->Presvetli, nadredjeni->bara, odjel->Marketing ].
+joza:zaposlenik[ ime->Josip, prezime->Prikratki, nadredjeni->bara, odjel->Marketing ].
+bara:menadzer[ ime->Barica, prezime->Jambrek ].
+
+
+Tada će se program ponašati na sljedeći način:
+
+
+flora2 ?- bara[ podredjeni( Marketing ) -> ?x ].
+
+?x = [ivek, joza]
+
+1 solution(s) in 0.0000 seconds
+
+Yes 
+*/
+
+zaposlenik[
+  ime => _string,
+  prezime => _string,
+  nadredjeni => menadzer,
+  odjel => _string
+].
+
+menadzer::zaposlenik[
+  podredjeni(_string) => zaposlenik
+].
+
+?menadzer[podredjeni(?odjel)->?podredjeni] :- 
+  ?podredjeni = collectset{?_g| ?_g:zaposlenik[nadredjeni->?menadzer, odjel-> ?odjel]}.
+
+ivek:zaposlenik[ ime->Ivan, prezime->Presvetli, nadredjeni->bara, odjel->Marketing ].
+joza:zaposlenik[ ime->Josip, prezime->Prikratki, nadredjeni->bara, odjel->Marketing ].
+bara:menadzer[ ime->Barica, prezime->Jambrek ].
+
+
+/*
+ Implementirajte klasu Direktorij u Flori-2 koja ima dvije metode. Pri tome se možete koristiti shell naredbom:
+
+tree -L 1 -f -i --noreport /putanja/do/direktorija
+
+Primjeri korištenja:
+
+flora2 ?- '/':Direktorij[ direktoriji->?dir ].
+
+?dir = /bin
+
+?dir = /boot
+
+?dir = /cdrom
+
+?dir = /dev
+
+?dir = /etc
+
+?dir = /home
+
+?dir = /lib
+
+?dir = /lost+found
+
+?dir = /media
+
+?dir = /mnt
+
+?dir = /opt
+
+?dir = /proc
+
+?dir = /root
+
+?dir = /run
+
+?dir = /sbin
+
+?dir = /selinux
+
+?dir = /srv
+
+?dir = /sys
+
+?dir = /tmp
+
+?dir = /usr
+
+?dir = /var
+
+21 solution(s) in 0.0000 seconds
+
+Yes
+
+flora2 ?- '/tmp':Direktorij[ datoteke->?dat ].
+
+?dat = /tmp/filef9FQ7r
+
+?dat = /tmp/k2.P
+
+?dat = /tmp/k2.fdb
+
+?dat = /tmp/k2.fld
+
+?dat = /tmp/k2.flr
+
+?dat = /tmp/k2_main.xwam
+
+?dat = /tmp/m.P
+
+?dat = /tmp/m.fdb
+
+?dat = /tmp/m.fld
+
+?dat = /tmp/m.flr
+
+?dat = /tmp/m_main.xwam
+
+?dat = /tmp/totem-plugin-viewer-LKL0PW
+
+?dat = /tmp/unity_support_test.0
+
+13 solution(s) in 0.0040 seconds
+
+Yes
+
+flora2 ?-
+ */
+
+Direktorij[
+  direktoriji->_string,
+  datoteke-> _string
+].
+
+
+?x:Direktorij[direktoriji->?z] :- str_cat('tree -L 1 -f -i --noreport ',?x, ?upit)@_prolog, 
+  shell_to_list(?upit, ?y, ?e)@_prolog,
+ member([?z],?y)@_prolog(basics), is_directory(?z)@_prolog(shell).
+
+?x:Direktorij[datoteke-> ?dat] :- str_cat('tree -a -L 1 -f -i --noreport ',?x, ?upit)@_prolog, 
+  shell_to_list(?upit, ?y, ?e)@_prolog,
+ member([?dat],?y)@_prolog(basics), is_plain_file(?dat)@_prolog(shell).
+
+
+
+
